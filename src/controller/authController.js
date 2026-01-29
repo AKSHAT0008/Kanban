@@ -19,7 +19,6 @@ async function login(req, res) {
             success: true,
             data: {
                 email: resp.email,
-                token: resp.token
             }
         })
     }

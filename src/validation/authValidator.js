@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config/serverConfig');
 
 async function isLoggedIn(req, res, next) {
-    console.log(req);
+    // console.log(req);
     const token = req.cookies?.authToken;
     
     
@@ -10,7 +10,7 @@ async function isLoggedIn(req, res, next) {
         return res.status(401).json({
             success: false,
             data: {},
-            error: "Not authenticated",
+            error: "Not authenticated",  
             message: "No auth Token found"
         });
     }
@@ -18,7 +18,7 @@ async function isLoggedIn(req, res, next) {
     try {
         const verified = jwt.verify(token, JWT_SECRET); //if verified sends payload(data)
         if (!verified) {
-            return res.status(401).json({
+            return res.status(401).json({ 
                 success: false,
                 data: {},
                 error: "Not authenticated",

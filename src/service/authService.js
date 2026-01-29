@@ -15,7 +15,7 @@ async function loginUser(userDetails) {
         
         if (!user) throw new Error("we can't find this email please sign-up");
         const plainPwd = userDetails.password;
-        const isMatch = bcrypt.compare(plainPwd, user.password);
+        const isMatch = await bcrypt.compare(plainPwd, user.password);
         if (!isMatch) throw new Error("Incorrect password");
 
         const payload = {
@@ -32,7 +32,7 @@ async function loginUser(userDetails) {
 
 
     } catch (error) {
-        console.log("Error at auth service layer: " + err.message);
+        console.log("Error at auth service layer: " + error.message);
         throw err;
     }
 }
