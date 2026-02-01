@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const listSchema = mongoose.Schema({
-    title:{
+    name:{
         type: String,
         // unique: true,
         required: true,
