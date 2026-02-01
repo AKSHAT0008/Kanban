@@ -29,4 +29,12 @@ async function lastOrderkey(boardId) {
   return result[0]?.maxKey ?? 0;
 }
 
-module.exports = { createListRepo, lastOrderkey }
+async function getListByBoard(boardID) {
+   const responce = await List.find({
+        isArchived: false,
+        boardID
+    }).sort({ orderKey: 1 })
+    return responce;
+}
+
+module.exports = { createListRepo, lastOrderkey, getListByBoard }
