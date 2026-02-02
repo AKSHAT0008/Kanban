@@ -1,0 +1,44 @@
+const { default: mongoose } = require("mongoose");
+const Todo = require("../schema/todoSchema");
+
+async function createTodoRepo(listID, todoTitle,description, prevOrderKey) {
+//   console.log("At repo" + boardId);
+
+  const todo = new Todo({
+    listID,
+    todoTitle,
+    description,
+    orderKey: prevOrderKey + 1
+  })
+  await todo.save();
+//   console.log("At repo" + boardId);
+  return todo;
+}
+
+async function lastOrderkey(listID) {
+  const result = await Todo.aggregate([
+    { $match: { listID: new mongoose.Types.ObjectId(listID) } },
+    {
+      $group: {
+        _id: null,
+        maxKey: { $max: "$orderKey" }
+      }
+    }
+  ])
+  console.log(result[0]?.maxKey);
+  
+  return result[0]?.maxKey ?? 0;
+}
+
+async function getTodosByList(listID) {
+    const responce = await Todo.find({
+        isArchived: false,
+        listID
+    }).sort({ orderKey: 1 })
+    console.log("At repo" + responce);
+    
+    return responce;
+}
+// console.log(getTodosByList('697f087733fdd2b1c7955f33'))
+
+module.exports = {createTodoRepo, lastOrderkey, getTodosByList}

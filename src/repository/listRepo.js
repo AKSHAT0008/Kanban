@@ -37,4 +37,13 @@ async function getListByBoard(boardID) {
     return responce;
 }
 
-module.exports = { createListRepo, lastOrderkey, getListByBoard }
+async function getListById(listId){
+  const responce = await List.findOne({
+        _id: listId,
+        // boardID: boardId,
+        isArchived: false
+    })
+    return responce;
+}
+
+module.exports = { createListRepo, lastOrderkey, getListByBoard, getListById }

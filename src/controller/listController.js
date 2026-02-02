@@ -4,8 +4,7 @@ async function createList(req, res) {
   const listName = req.body.listName;
   const boardID = req.params.id;
   const userId = req.user._id;
-  console.log("At controller " + boardID);
-  
+  console.log("At controller " + boardID); 
   try {
     //create board service (call service layer)
     const list = await createListService(boardID,listName, userId);

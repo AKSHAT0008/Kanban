@@ -14,7 +14,7 @@ const todoSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'List',
         required: true
-    },
+    }, 
     orderKey: {                   
         type: Number,
         required: true
