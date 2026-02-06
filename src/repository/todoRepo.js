@@ -1,8 +1,9 @@
 const { default: mongoose } = require("mongoose");
 const Todo = require("../schema/todoSchema");
+const List = require("../schema/listSchema");
 
-async function createTodoRepo(listID, todoTitle,description, prevOrderKey) {
-//   console.log("At repo" + boardId);
+async function createTodoRepo(listID, todoTitle, description, prevOrderKey) {
+  //   console.log("At repo" + boardId);
 
   const todo = new Todo({
     listID,
@@ -11,7 +12,7 @@ async function createTodoRepo(listID, todoTitle,description, prevOrderKey) {
     orderKey: prevOrderKey + 1
   })
   await todo.save();
-//   console.log("At repo" + boardId);
+  //   console.log("At repo" + boardId);
   return todo;
 }
 
@@ -26,19 +27,40 @@ async function lastOrderkey(listID) {
     }
   ])
   console.log(result[0]?.maxKey);
-  
+
   return result[0]?.maxKey ?? 0;
 }
 
 async function getTodosByList(listID) {
-    const responce = await Todo.find({
-        isArchived: false,
-        listID
-    }).sort({ orderKey: 1 })
-    console.log("At repo" + responce);
-    
-    return responce;
+  const responce = await Todo.find({
+    isArchived: false,
+    listID
+  }).sort({ orderKey: 1 })
+  console.log("At repo" + responce);
+
+  return responce;
 }
 // console.log(getTodosByList('697f087733fdd2b1c7955f33'))
-
-module.exports = {createTodoRepo, lastOrderkey, getTodosByList}
+async function moveTodo(todoID, updateFields) {
+  const listID = updateFields.listID;
+  const orderKey = updateFields.orderKey;
+  const responce = Todo.updateOne(
+    {
+      _id: todoID
+    },
+    {
+      $set: { listID, orderKey }
+    }
+  )
+  return responce;
+}
+async function getTodoById(todoID) {
+  const responce = await Todo.findOne(
+    {
+      _id: todoID,
+      isArchived: false
+    }
+  )
+  return responce;
+}
+module.exports = { createTodoRepo, lastOrderkey, getTodosByList, moveTodo, getTodoById }

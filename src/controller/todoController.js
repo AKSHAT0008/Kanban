@@ -1,4 +1,4 @@
-const { createTodoService, getTodosByListService } = require("../service/todoService");
+const { createTodoService, getTodosByListService, moveTodoService } = require("../service/todoService");
 
 async function createTodoController(req, res) {
   try {
@@ -27,8 +27,6 @@ async function createTodoController(req, res) {
   }
 }
 async function getTodosByList(req, res) {
-
-
   try {
     const listID = req.params.listId;
     const userId = req.user._id;
@@ -51,4 +49,26 @@ async function getTodosByList(req, res) {
   }
 }
 
-module.exports = { createTodoController, getTodosByList }
+async function moveTodoController(req, res) {
+  try {
+    const todoID = req.params.todoId;
+    const targetListId = req.body.targetListId;
+    const targetOrderKey = req.body.targetOrderKey;
+    const userId = req.user._id;
+
+    const responce = await moveTodoService(todoID, userId, targetListId, targetOrderKey)
+    res.status(200).json({
+      success: true,
+      message: "Todo moved successfully",
+      data: responce
+    });
+  } catch (error) {
+    console.error("Fetching Error: ", error.message);
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+module.exports = { createTodoController, getTodosByList, moveTodoController }
