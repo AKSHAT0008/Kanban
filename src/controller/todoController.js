@@ -1,4 +1,4 @@
-const { createTodoService, getTodosByListService, moveTodoService } = require("../service/todoService");
+const { createTodoService, getTodosByListService, moveTodoService, archiveTodoService } = require("../service/todoService");
 
 async function createTodoController(req, res) {
   try {
@@ -71,4 +71,24 @@ async function moveTodoController(req, res) {
   }
 }
 
-module.exports = { createTodoController, getTodosByList, moveTodoController }
+async function archiveTodo(req, res) {
+  const todoId = req.params.todoId
+  const userId = req.user._id;
+  try {
+    const todo = await archiveTodoService(todoId, userId);
+    res.status(200).json({
+      success: true,
+      message: "Todo deleted successfully",
+      data: todo
+    });
+  } 
+  catch (error) {
+    console.error("Fetching Error: ", error.message);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message
+    });
+  }
+}
+
+module.exports = { createTodoController, getTodosByList, moveTodoController, archiveTodo }

@@ -1,6 +1,6 @@
 const { getBoard } = require("../repository/boardRepo");
 const { getListByBoard, getListById } = require("../repository/listRepo");
-const { createTodoRepo, lastOrderkey, getTodosByList, getTodoById, moveTodo } = require("../repository/todoRepo");
+const { createTodoRepo, lastOrderkey, getTodosByList, getTodoById, moveTodo, archiveTodo } = require("../repository/todoRepo");
 
 async function createTodoService(listID, todoName, description, userId) {
     // console.log("At service" + boardId);
@@ -112,4 +112,26 @@ async function moveTodoService(todoID, userId, targetListId, targetOrderKey) {
     return responce;
 }
 
-module.exports = { createTodoService, getTodosByListService, moveTodoService }
+async function archiveTodoService(todoId, userId) {
+    // 1. Fetch todo
+    const todo = await getTodoById(todoId);
+    if (!todo) {
+        throwNotFound("Todo not found");
+    }
+
+    // 2. Fetch list
+    const list = await getListById(todo.listID);
+    if (!list) {
+        throwNotFound("List not found");
+    }
+
+    // 3. Fetch board (authorization)
+    const board = await getBoard(list.boardID, userId);
+    if (!board) {
+        throwNotFound("Board not found or not authorized");
+    }
+    const responce = await archiveTodo(id);
+    return responce;
+}
+
+module.exports = { createTodoService, getTodosByListService, moveTodoService, archiveTodoService }

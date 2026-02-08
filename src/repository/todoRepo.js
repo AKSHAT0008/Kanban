@@ -63,4 +63,17 @@ async function getTodoById(todoID) {
   )
   return responce;
 }
-module.exports = { createTodoRepo, lastOrderkey, getTodosByList, moveTodo, getTodoById }
+async function archiveTodo(id) {
+    const responce = await Todo.updateOne({
+        _id: id,
+        isArchived: false
+    },
+        { $set: { isArchived: true } })
+    if (responce.matchedCount === 0) {
+        const error = new Error("Todo not found or already archived");
+        error.statusCode = 409; // default
+        throw error;
+    }
+    return responce;
+}
+module.exports = { createTodoRepo, lastOrderkey, getTodosByList, moveTodo, getTodoById, archiveTodo }
