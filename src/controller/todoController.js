@@ -1,4 +1,4 @@
-const { createTodoService, getTodosByListService, moveTodoService, archiveTodoService } = require("../service/todoService");
+const { createTodoService, getTodosByListService, moveTodoService, archiveTodoService, reorderTodoService, normalizeTodoService } = require("../service/todoService");
 
 async function createTodoController(req, res) {
   try {
@@ -70,6 +70,45 @@ async function moveTodoController(req, res) {
     });
   }
 }
+async function reorderTodoController(req, res) {
+  try {
+    const todoID = req.params.todoId;
+    const targetOrderKey = req.body.targetOrderKey;
+    const userId = req.user._id;
+
+    const responce = await reorderTodoService(todoID, userId, targetOrderKey)
+    res.status(200).json({
+      success: true,
+      message: "Todo reorderd successfully",
+      data: responce
+    });
+  } catch (error) {
+    console.error("Fetching Error: ", error.message);
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+async function normalizeTodoController(req, res) {
+  try {
+    const listId = req.params.listId;
+    const userId = req.user._id;
+
+    const responce = await normalizeTodoService(listId, userId)
+    res.status(200).json({
+      success: true,
+      message: "Todo normalized successfully",
+      data: responce
+    });
+  } catch (error) {
+    console.error("Fetching Error: ", error.message);
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
 
 async function archiveTodo(req, res) {
   const todoId = req.params.todoId
@@ -91,4 +130,4 @@ async function archiveTodo(req, res) {
   }
 }
 
-module.exports = { createTodoController, getTodosByList, moveTodoController, archiveTodo }
+module.exports = { createTodoController, getTodosByList, moveTodoController, archiveTodo, reorderTodoController, normalizeTodoController }

@@ -1,6 +1,6 @@
 const { getBoard } = require("../repository/boardRepo");
 const { getListByBoard, getListById } = require("../repository/listRepo");
-const { createTodoRepo, lastOrderkey, getTodosByList, getTodoById, moveTodo, archiveTodo } = require("../repository/todoRepo");
+const { createTodoRepo, lastOrderkey, getTodosByList, getTodoById, moveTodo, archiveTodo, reorderTodo, normalizeTodo } = require("../repository/todoRepo");
 
 async function createTodoService(listID, todoName, description, userId) {
     // console.log("At service" + boardId);
@@ -57,6 +57,66 @@ async function getTodosByListService(listId, userId) {
     return todos
 }
 
+// moveTodo changes where an item belongs. (it is for different list the total todo count is changed though we'll add +1 in newOrderKey)
+// reorderTodo changes how it is arranged. (it is for within same list the total todo count is not changed though we'll not add +1 in newOrderKey)
+
+
+async function reorderTodoService(todoID, userId, targetOrderKey) {
+    const todo = await getTodoById(todoID);
+    // console.log(list);   
+    //checking if todo exist?
+    if (!todo) {
+        const error = new Error("Todo not found or not authorized");
+        error.statusCode = 404; // default
+        throw error;
+    }
+    //checking if list of given Todo exist?
+    const sourceList = await getListById(todo.listID);
+    if (!sourceList) {
+        const error = new Error("The list of Todo not found or not authorized");
+        error.statusCode = 404; // default
+        throw error;
+    }
+    //checking if board of given Todo exist?
+    const sourceBoard = await getBoard(sourceList.boardID, userId);
+    if (!sourceBoard) {
+        const error = new Error("The board of Todo not found or not authorized");
+        error.statusCode = 404; // default
+        throw error;
+    }
+
+    const maxOrderKey = await lastOrderkey(todo.listID);
+    const newOrderKey = Math.min(maxOrderKey, targetOrderKey);
+
+    const responce = await reorderTodo(todoID, newOrderKey)
+    return responce;
+}
+
+async function normalizeTodoService(listId, userId) {
+    const list = await getListById(listId);
+    console.log(list);
+
+    //checking if list exist?
+    if (!list) {
+        const error = new Error("List not found or not authorized");
+        error.statusCode = 404; // default
+        throw error;
+    }
+
+    //checking if board exist?
+    const board = await getBoard(list.boardID, userId);
+    console.log(board);
+
+    if (!board) {
+        const error = new Error("Board not found or not authorized");
+        error.statusCode = 404; // default
+        throw error;
+    }
+
+    const responce = await normalizeTodo(listId);
+    // return responce;
+
+}
 async function moveTodoService(todoID, userId, targetListId, targetOrderKey) {
     const todo = await getTodoById(todoID);
     // console.log(list);   
@@ -134,4 +194,4 @@ async function archiveTodoService(todoId, userId) {
     return responce;
 }
 
-module.exports = { createTodoService, getTodosByListService, moveTodoService, archiveTodoService }
+module.exports = { createTodoService, getTodosByListService, moveTodoService, archiveTodoService, reorderTodoService, normalizeTodo, normalizeTodoService}

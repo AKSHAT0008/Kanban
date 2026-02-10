@@ -44,7 +44,7 @@ async function getTodosByList(listID) {
 async function moveTodo(todoID, updateFields) {
   const listID = updateFields.listID;
   const orderKey = updateFields.orderKey;
-  const responce = Todo.updateOne(
+  const responce = await Todo.updateOne(
     {
       _id: todoID
     },
@@ -54,6 +54,43 @@ async function moveTodo(todoID, updateFields) {
   )
   return responce;
 }
+// reorderTodo: updates orderKey of a single todo (within a list not across)
+// normalizeTodo: reassigns sequential orderKey (1..n) for all active todos in a list
+// sorted by current orderKey, then updatedAt to keep relative order stable
+
+async function reorderTodo(todoID, orderKey) {
+  const responce = await Todo.updateOne(
+    {
+      _id: todoID
+    },
+    {
+      $set: { orderKey }
+    }
+  )
+  return responce;
+}
+
+async function normalizeTodo(listID) {
+  const responce = await Todo.find({
+    isArchived: false,
+    listID
+  }).sort({ orderKey: 1, updatedAt: -1 })
+
+  if (responce.length === 0) {
+    return { normalizedCount: 0 };
+  }
+
+  const bulkOps = responce.map((todo, index) => ({
+    updateOne: {
+      filter: { _id: todo._id },
+      update: { $set: { orderKey: index + 1 } }
+    }
+  }));
+
+  await Todo.bulkWrite(bulkOps);
+
+}
+
 async function getTodoById(todoID) {
   const responce = await Todo.findOne(
     {
@@ -64,16 +101,16 @@ async function getTodoById(todoID) {
   return responce;
 }
 async function archiveTodo(id) {
-    const responce = await Todo.updateOne({
-        _id: id,
-        isArchived: false
-    },
-        { $set: { isArchived: true } })
-    if (responce.matchedCount === 0) {
-        const error = new Error("Todo not found or already archived");
-        error.statusCode = 409; // default
-        throw error;
-    }
-    return responce;
+  const responce = await Todo.updateOne({
+    _id: id,
+    isArchived: false
+  },
+    { $set: { isArchived: true } })
+  if (responce.matchedCount === 0) {
+    const error = new Error("Todo not found or already archived");
+    error.statusCode = 409; // default
+    throw error;
+  }
+  return responce;
 }
-module.exports = { createTodoRepo, lastOrderkey, getTodosByList, moveTodo, getTodoById, archiveTodo }
+module.exports = { createTodoRepo, lastOrderkey, getTodosByList, moveTodo, getTodoById, archiveTodo, reorderTodo, normalizeTodo } 
